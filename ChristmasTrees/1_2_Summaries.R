@@ -20,7 +20,7 @@ tree_layout <- c(1, 3, 3, 5, 5, 7, 7, 9, 9)
 
 tibble(x = tree_layout %>% 
          purrr::map(function(ii){
-           seq(1, ii) + (9-ii)/2}) %>% unlist(),
+           seq(1, ii) + (length(tree_layout)-ii)/2}) %>% unlist(),
        y = (length(tree_layout)+1)-rep(seq_along(tree_layout), tree_layout)
 ) -> tree_shape 
 
