@@ -16,7 +16,7 @@
 #   coord_fixed()
 
 #Custom tree
-tree_layout <- c(1, 3, 3, 5, 5, 7, 7, 9, 9)
+tree_layout <- c(1, 1, 3, 3, 5, 5, 7, 7, 9, 9)
 
 tibble(x = tree_layout %>% 
          purrr::map(function(ii){
@@ -57,7 +57,8 @@ custom_tree_plot <- function(bool_array = FALSE,
       color = NA, fill = "black", alpha = 0.2) +
     ggforce::geom_circle(
       data = tree %>% rename(x0=x, y0=y),
-      aes(x0=x0, y0=y0, r=(5/8)/2*0.9, fill=detail, color = color_edge)) +
+      aes(x0=x0, y0=y0, r=(5/8)/2*0.9, fill=detail, color = color_edge),
+      size = .2) +
     #Brick color
     scale_fill_manual(values = c("TRUE" = color_detail, "FALSE" = color_base)) +
     scale_color_identity() +
@@ -66,7 +67,7 @@ custom_tree_plot <- function(bool_array = FALSE,
     coord_fixed() +
     theme_minimal()+
     theme(
-      plot.background = element_rect(fill = "#fff8ea"),
+      plot.background = element_rect(fill = "#fff8ea", color = NA),
       panel.grid = element_blank(),
       axis.title = element_blank(),
       axis.text.x = element_blank(),
@@ -78,29 +79,34 @@ custom_tree_plot <- function(bool_array = FALSE,
 
 #Default tree
 custom_tree_plot()
+dat_p1 %>% count(str_detect(set_name, "Advent"), foliage_orientation, year) %>% 
+  arrange(year) %>% 
+  pivot_wider(names_from = year, values_from = n) %>% View()
 
-#SNOT trees
+
+
+#Single plots for blog ----
 dat_p1 %>% 
   mutate(SNOT = foliage_orientation == "SNOT") %>%
   arrange(desc(SNOT)) %>% 
   pull() %>% 
   custom_tree_plot(
-    title_text = paste(sum(.), "trees with SNOT foliage orientation"),
     color_detail = "#FAC80A",
     x_first = TRUE,
     edge_detail = "dark"
   )
+ggsave("tree_sum_snot.png", height = 2.8, width = 2.5)
 
 #Snow trees
 dat_p1 %>% 
   arrange(desc(snow)) %>% 
   pull(snow) %>% 
   custom_tree_plot(
-    title_text = paste(sum(.), "trees with snow"),
     color_detail = "#F4F4F4",
     x_first = FALSE,
     edge_detail = "dark"
   )
+ggsave("tree_sum_snow.png", height = 2.8, width = 2.5)
 
 #Advent trees
 dat_p1 %>% 
@@ -108,9 +114,9 @@ dat_p1 %>%
   arrange(desc(advent)) %>% 
   pull() %>% 
   custom_tree_plot(
-    title_text = paste(sum(.), "trees from LEGO Advent calendars"),
     x_first = TRUE
   )
+ggsave("tree_sum_advent.png", height = 2.8, width = 2.5)
 
 #Colors
 dat_p1 %>% 
@@ -125,8 +131,62 @@ dat_p1 %>%
   arrange(desc(foliage_color_dg))%>% 
   pull() %>% 
   custom_tree_plot(
-    title_text = paste(sum(.), "trees have a primary foliage color other than dark green"),
     x_first = FALSE,
     color_detail = "#A5CA18",	# "#009894"
     edge_detail = "dark"
-  )
+  ) 
+
+ggsave("tree_sum_colors.png", height = 2.8, width = 2.5)
+
+#Stylized version for the blog header ----
+list(
+  dat_p1 %>% 
+    mutate(SNOT = foliage_orientation == "SNOT") %>%
+    arrange(desc(SNOT)) %>% 
+    pull() %>% 
+    custom_tree_plot(
+      color_detail = "#FAC80A",
+      x_first = TRUE,
+      edge_detail = "dark"
+    ),
+  
+  #Snow trees
+  dat_p1 %>% 
+    arrange(desc(snow)) %>% 
+    pull(snow) %>% 
+    custom_tree_plot(
+      color_detail = "#F4F4F4",
+      x_first = FALSE,
+      edge_detail = "dark"
+    ),
+  
+  #Advent trees
+  dat_p1 %>% 
+    mutate(advent = str_detect(set_name, "Advent")) %>%
+    arrange(desc(advent)) %>% 
+    pull() %>% 
+    custom_tree_plot(
+      x_first = TRUE
+    ),
+  
+  #Colors
+  dat_p1 %>% 
+    mutate(foliage_color = purrr::map(foliage_color, unlist)) %>% 
+    unnest(foliage_color) %>% 
+    group_by(set_num) %>% 
+    filter(
+      (n() > 1 & foliage_color != "Dark green") | n() == 1
+    ) %>% 
+    filter(row_number() == 1) %>% 
+    mutate(foliage_color_dg = foliage_color != "Dark green") %>% 
+    arrange(desc(foliage_color_dg))%>% 
+    pull() %>% 
+    custom_tree_plot(
+      x_first = FALSE,
+      color_detail = "#A5CA18",	# "#009894"
+      edge_detail = "dark"
+    ) 
+  ) %>% 
+  patchwork::wrap_plots(ncol = 4)
+
+ggsave("legotree_header.png", width = 8, height=3)

@@ -139,27 +139,27 @@ tree_plot_base %>%
   geom_rect(data = tree_plot_wood,
             aes(xmin=xmin, xmax=xmax,
                 ymin=ymin1, ymax=ymax1),
-            fill = "#5F3109", color = "#cccccc") +
+            fill = "#5F3109", color = "#cccccc", size = 0.2) +
   geom_rect(data = tree_plot_wood,
             aes(xmin=xmin*(6.5/8), xmax=xmax*(6.5/8),
                 ymin=ymin2, ymax=ymax2),
-            fill = colorspace::darken("#5F3109", .3), color = "#cccccc") +
+            fill = colorspace::darken("#5F3109", .3), color = "#cccccc", size = 0.2) +
   geom_rect(xmin = (-1/2 + 1/16) * (5/8), xmax = (1/2 - 1/16) * (5/8),
             ymin = max(tree_plot_wood$ymax1), ymax = max(tree_plot_wood$ymax1)+(1/6),
-            fill = colorspace::darken("#5F3109", .3), color = "#cccccc") +
+            fill = colorspace::darken("#5F3109", .3), color = "#cccccc", size = 0.2) +
   geom_text(data = tree_plot_wood,
             aes(x=0, y=ymin1+1/2, label = height_full_bricks),
-            color = "white", fontface = "bold") +
+            color = "white", fontface = "bold", size = 3) +
   #Foliage bricks
   geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-            fill = "#00852B", color = "#cccccc") +
+            fill = "#00852B", color = "#cccccc", size = 0.1) +
   geom_segment(data = tree_plot_base_split,
                aes(x=x, xend=xend, y=y, yend=yend),
-               color = "#cccccc") +
+               color = "#cccccc", size = 0.2) +
   #STUDS SOT
   geom_rect(data = tree_plot_sot2,
             aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-            fill = "#00852B", color = "#cccccc")+
+            fill = "#00852B", color = "#cccccc", size = 0.1)+
   #STUDS SNOT
   ggforce::geom_circle(data = tree_plot_snot2,
                        aes(x0=x0+0.1, y0=y0-0.1, r=r), 
@@ -188,9 +188,9 @@ tree_plot_base %>%
     x = "# of LEGO Christmas trees",
     y = NULL
   ) +
-  theme_minimal() +
+  theme_minimal(base_size = 8) +
   theme(
-    plot.background = element_rect(fill = "#fff8ea"),
+    plot.background = element_rect(fill = "#fff8ea", color = NA),
     panel.grid.minor = element_blank(),
     axis.title.x = element_text(color = colorspace::darken("#00852B", 0.3)),
     axis.text.x = element_text(color = colorspace::darken("#00852B", 0)),
@@ -198,4 +198,5 @@ tree_plot_base %>%
     axis.line.y = element_blank()
   )
 
+ggsave("tree_distribution.png", height = 4, width = 4)
 

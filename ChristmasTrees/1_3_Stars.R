@@ -1,6 +1,8 @@
 library(patchwork)
 
 #STAR ---
+dat_p1 %>% count(star_piece, sort = TRUE)
+
 unique(dat_p1$star_color)
 unique(dat_p1$star_piece)
 
@@ -127,7 +129,10 @@ star_plot_dat %>%
   geom_polygon(data = star_plot_bg(1) %>% left_join(map_color),
                fill = NA, 
                color = "black", alpha = NA) +
-  geom_polygon(data = star_plot_bg(0.5) %>% left_join(map_color),
+  geom_polygon(data = star_plot_bg(1/3) %>% left_join(map_color),
+               fill = NA,  linetype = "dotted",
+               color = "#999999") +
+  geom_polygon(data = star_plot_bg(2/3) %>% left_join(map_color),
                fill = NA,  linetype = "dotted",
                color = "#999999") +
   scale_fill_identity()+
@@ -144,6 +149,7 @@ star_plot_dat %>%
   ) -> p_plot
 
 #Legend --
+leg_bounds <- c(-3.5,3.5)
 star_plot_bg(1) %>% 
   filter(piece == "Other pieces") %>% 
   mutate(
@@ -164,7 +170,10 @@ star_plot_bg(1) %>%
                color = NA) +
   geom_polygon(fill = NA,
                color = "black", alpha = NA) +
-  geom_polygon(data = star_plot_bg(0.5) %>% left_join(map_color),
+  geom_polygon(data = star_plot_bg(1/3) %>% left_join(map_color),
+               fill = NA,  linetype = "dotted",
+               color = "#999999") +
+  geom_polygon(data = star_plot_bg(2/3) %>% left_join(map_color),
                fill = NA,  linetype = "dotted",
                color = "#999999") +
   scale_fill_identity()+
@@ -173,13 +182,13 @@ star_plot_bg(1) %>%
     data = star_plot_bg(0.5) %>% left_join(map_color) %>% 
       filter(piece == "Other pieces") %>% 
       group_by(color, color_hex) %>% 
-      summarize(across(c(x, y), ~mean(.)*6/3)) %>% 
+      summarize(across(c(x, y), ~mean(.)*8/3)) %>% 
       mutate(color = str_wrap(color, width = 16)),
     aes(label = color), alpha = 0.8, color = "black", fontface = "bold",
     hjust = 0.5, vjust = 0.5,
-    size = 2
+    size = 2.5
   )+
-  coord_fixed(ylim = c(-3,3), xlim=c(-3, 3)) +
+  coord_fixed(ylim = leg_bounds, xlim=leg_bounds) +
   theme_void() +
   theme(
     strip.background = element_rect(fill = "#00852B", color = NA),
@@ -189,10 +198,10 @@ star_plot_bg(1) %>%
     legend.position = "none"
   ) -> p_legend_color
 
-0:4 %>% 
-  purrr::map_dfr(
-    ~star_plot_bg(.x/4) %>% 
-      filter(color == levels(map_color$color)[.x+1])
+c(0, 1, 3, 6, 9) %>% 
+  purrr::imap_dfr(
+    ~star_plot_bg(.x/9) %>% 
+      filter(color == levels(map_color$color)[.y])
   ) %>% 
   filter(piece == "Other pieces") %>% 
   ggplot(aes(x,y, group = color)) +
@@ -204,18 +213,21 @@ star_plot_bg(1) %>%
     data = star_plot_bg(0.5) %>% left_join(map_color) %>% 
       filter(piece == "Other pieces") %>% 
       group_by(color, color_hex) %>% 
-      summarize(across(c(x, y), ~mean(.)*6/3), .groups="drop") %>% 
-      mutate(label = ifelse((row_number()-1) == 0, paste0((row_number()-1)*2, "\nstars"),
-                            (row_number()-1)*2)),
+      summarize(across(c(x, y), ~mean(.)*7/3), .groups="drop") %>% 
+      mutate(label = ifelse((row_number()-1) == 0, paste0(c(0, 1, 3, 6, 9)[row_number()], "\nstars"),
+                            c(0, 1, 3, 6, 9)[row_number()])),
     aes(label = label, color = label), alpha = 0.8, fontface = "bold",
     hjust = 0.5, vjust = 0.5,
     size = 3
   )+
   scale_color_manual(values = c("#00852B", rep("black", 4))) +
-  geom_polygon(data = star_plot_bg(0.5) %>% left_join(map_color),
+  geom_polygon(data = star_plot_bg(1/3) %>% left_join(map_color),
                fill = NA,  linetype = "dotted",
                color = "#999999") +
-  coord_fixed(ylim = c(-3,3), xlim=c(-3, 3)) +
+  geom_polygon(data = star_plot_bg(2/3) %>% left_join(map_color),
+               fill = NA,  linetype = "dotted",
+               color = "#999999") +
+  coord_fixed(ylim = leg_bounds, xlim=leg_bounds) +
   theme_void() +
   theme(
     strip.background = element_rect(fill = "#00852B", color = NA),
@@ -236,3 +248,6 @@ AAAAAA
 p_plot + p_legend_color + p_legend_size + 
   plot_layout(design = layout) & 
   theme(plot.background = element_rect(fill = "#fff8ea", color = NA))
+
+
+ggsave("tree_stars.png", width = 10, height = 4.5)
