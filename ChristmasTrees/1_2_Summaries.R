@@ -16,7 +16,9 @@
 #   coord_fixed()
 
 #Custom tree
-tree_layout <- c(1, 1, 3, 3, 5, 5, 7, 7, 9, 9)
+#tree_layout <- c(1, 1, 3, 3, 5, 5, 7, 7, 9, 9) #Old 49 version
+tree_layout <- c(1, 1, 3, 3, 5, 5, 7, 7, 9, 9, 11) #61
+sum(tree_layout)
 
 tibble(x = tree_layout %>% 
          purrr::map(function(ii){
@@ -83,9 +85,13 @@ dat_p1 %>% count(str_detect(set_name, "Advent"), foliage_orientation, year) %>%
   arrange(year) %>% 
   pivot_wider(names_from = year, values_from = n) %>% View()
 
-
-
 #Single plots for blog ----
+
+dat_p1 %>% 
+  mutate(SNOT = foliage_orientation == "SNOT") %>%
+  arrange(desc(SNOT)) %>% 
+  pull() %>% sum()
+  
 dat_p1 %>% 
   mutate(SNOT = foliage_orientation == "SNOT") %>%
   arrange(desc(SNOT)) %>% 
@@ -100,6 +106,10 @@ ggsave("tree_sum_snot.png", height = 2.8, width = 2.5)
 #Snow trees
 dat_p1 %>% 
   arrange(desc(snow)) %>% 
+  pull(snow) %>% sum()
+  
+dat_p1 %>% 
+  arrange(desc(snow)) %>% 
   pull(snow) %>% 
   custom_tree_plot(
     color_detail = "#F4F4F4",
@@ -111,6 +121,10 @@ ggsave("tree_sum_snow.png", height = 2.8, width = 2.5)
 #Advent trees
 dat_p1 %>% 
   mutate(advent = str_detect(set_name, "Advent")) %>%
+  pull() %>% sum()
+
+dat_p1 %>% 
+  mutate(advent = str_detect(set_name, "Advent")) %>%
   arrange(desc(advent)) %>% 
   pull() %>% 
   custom_tree_plot(
@@ -119,6 +133,18 @@ dat_p1 %>%
 ggsave("tree_sum_advent.png", height = 2.8, width = 2.5)
 
 #Colors
+dat_p1 %>% 
+  mutate(foliage_color = purrr::map(foliage_color, unlist)) %>% 
+  unnest(foliage_color) %>% 
+  group_by(set_num) %>% 
+  filter(
+    (n() > 1 & foliage_color != "Dark green") | n() == 1
+  ) %>% 
+  filter(row_number() == 1) %>% 
+  mutate(foliage_color_dg = foliage_color != "Dark green") %>% 
+  arrange(desc(foliage_color_dg))%>% 
+  pull() %>% sum()
+  
 dat_p1 %>% 
   mutate(foliage_color = purrr::map(foliage_color, unlist)) %>% 
   unnest(foliage_color) %>% 

@@ -175,13 +175,13 @@ tree_plot_base %>%
            x =  1.5, y = 1, hjust = 0,
            color = colorspace::darken("#00852B", 0.3), fontface = "bold") +
   annotate("text", label = "tree height (bricks)",
-           x =  0, y = 16, hjust = 0.5, vjust=0,
+           x = 1, y = 24, hjust = 0, vjust=0,
            color = colorspace::darken("#5F3109", 0.0)) +
   #Formatting
   #Super hacky x-axis to have my custom Y axis
-  scale_x_continuous(breaks = c(seq(-10.5, -2.5, by=2), 0, seq(2.5, 10.5, by=2)), 
-                     labels = c(seq(10, 2, by=-2), "", seq(2, 10, by=2))) +
-  coord_fixed(xlim = c(-11, 11), ylim = c(0.5, 17), expand = FALSE) +
+  scale_x_continuous(breaks = c(seq(-12.5, -2.5, by=2), 0, seq(2.5, 12.5, by=2)), 
+                     labels = c(seq(12, 2, by=-2), "", seq(2, 12, by=2))) +
+  coord_fixed(xlim = c(-13, 13), ylim = c(0.5, 25), expand = FALSE) +
   labs(
     title = "Height distribution of brick-built LEGO Christmas trees",
     caption = "Estimated height in bricks, studs on top.",
@@ -198,5 +198,9 @@ tree_plot_base %>%
     axis.line.y = element_blank()
   )
 
-ggsave("tree_distribution.png", height = 4, width = 4)
+ggsave("tree_distribution.png", height = 5, width = 5)
 
+
+ratio = 16/9
+width = 6
+ggsave("tree_distribution_header.png", height = width/ratio, width = width)

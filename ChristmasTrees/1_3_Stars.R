@@ -72,6 +72,8 @@ star_plot_bg <- function(diamond_scale){
     })
 }
 
+#Updated for a maximum of 9 n
+# Everythign over 9 is a completely filled section
 piece_summary %>% 
   select(color = star_color2, piece = star_piece2,
          n) %>% 
@@ -81,7 +83,8 @@ piece_summary %>%
   mutate(color_orient = factor(color, 
                                levels = c("Bright yellow", "Warm gold", "Other colors",
                                           "Transparent fluorescent green", "Transparent yellow")),
-         color_scale = n / max(n)) %>% 
+         # color_scale = n / max(n),
+         color_scale = pmin(n / 9, 1)) %>% 
   #Get diamond/polygon coords for each row.
   # Each row is a diamond, each diamond has 5 pairs of coords
   mutate(diamond = purrr::map2(
@@ -214,12 +217,14 @@ c(0, 1, 3, 6, 9) %>%
       filter(piece == "Other pieces") %>% 
       group_by(color, color_hex) %>% 
       summarize(across(c(x, y), ~mean(.)*7/3), .groups="drop") %>% 
-      mutate(label = ifelse((row_number()-1) == 0, paste0(c(0, 1, 3, 6, 9)[row_number()], "\nstars"),
-                            c(0, 1, 3, 6, 9)[row_number()])),
+      mutate(label = case_when(
+        (row_number()-1) == 0 ~ paste0(c(0, 1, 3, 6, 9)[row_number()], "\nstars"),
+        (row_number()-1) == 4 ~ paste0(c(0, 1, 3, 6, 9)[row_number()], "+"),
+        TRUE ~  as.character(c(0, 1, 3, 6, 9)[row_number()]))),
     aes(label = label, color = label), alpha = 0.8, fontface = "bold",
     hjust = 0.5, vjust = 0.5,
     size = 3
-  )+
+  ) +
   scale_color_manual(values = c("#00852B", rep("black", 4))) +
   geom_polygon(data = star_plot_bg(1/3) %>% left_join(map_color),
                fill = NA,  linetype = "dotted",
